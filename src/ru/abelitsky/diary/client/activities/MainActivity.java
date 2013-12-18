@@ -1,21 +1,25 @@
 package ru.abelitsky.diary.client.activities;
 
+import com.google.gwt.activity.shared.AbstractActivity;
+import com.google.gwt.event.shared.EventBus;
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+
 import ru.abelitsky.diary.client.ClientFactory;
 import ru.abelitsky.diary.client.views.MainView;
 
-public class MainActivity implements MainView.Presenter {
+public class MainActivity extends AbstractActivity implements MainView.Presenter {
 
 	private ClientFactory clientFactory;
-	private MainView mainView;
 
 	public MainActivity(ClientFactory clientFactory) {
 		this.clientFactory = clientFactory;
-		this.mainView = this.clientFactory.getMainView();
-		this.mainView.setPresenter(this);
 	}
 
-	public MainView getView() {
-		return clientFactory.getMainView();
+	@Override
+	public void start(AcceptsOneWidget panel, EventBus eventBus) {
+		MainView mainView = this.clientFactory.getMainView();
+		mainView.setPresenter(this);
+		panel.setWidget(mainView);
 	}
 
 }
