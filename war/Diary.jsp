@@ -4,6 +4,12 @@
 <!-- "Standards Mode". Replacing this declaration   -->
 <!-- with a "Quirks Mode" doctype is not supported. -->
 
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.google.appengine.api.users.UserServiceFactory" %>
+<%@ page import="com.google.appengine.api.users.UserService" %>
+
+<% UserService userService = UserServiceFactory.getUserService(); %>
+
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -16,7 +22,7 @@
     <!--                                           -->
     <!-- Any title is fine                         -->
     <!--                                           -->
-    <title>Web Application Starter Project</title>
+    <title>Дневничок</title>
     
     <!--                                           -->
     <!-- This script loads your compiled module.   -->
@@ -44,19 +50,16 @@
       </div>
     </noscript>
 
-    <h1>Web Application Starter Project</h1>
-
-    <table align="center">
-      <tr>
-        <td colspan="2" style="font-weight:bold;">Please enter your name:</td>        
-      </tr>
-      <tr>
-        <td id="nameFieldContainer"></td>
-        <td id="sendButtonContainer"></td>
-      </tr>
-      <tr>
-        <td colspan="2" style="color:red;" id="errorLabelContainer"></td>
-      </tr>
-    </table>
+    <h1 style="font-size: 2em; font-weight: bold; color: #777777; margin: 20px 0 0 0; text-align: center;">
+    	Дневничок
+    </h1>
+	<div style="font-size: 12px; text-align: right;">
+		<%=userService.getCurrentUser().getNickname()%>
+		&nbsp; <a href="<%=userService.createLogoutURL("/")%>">Выход</a>
+	</div>
+	<hr />
+    <div style="color: red;" id="global-error"></div>
+	<div id="appContainer"></div>
+	<div id="loading" style="margin-top: 50px; text-align: center;"><img src="/ajax-loader.gif"/></div>
   </body>
 </html>

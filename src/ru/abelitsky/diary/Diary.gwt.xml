@@ -16,8 +16,10 @@
   <!-- <inherits name='com.google.gwt.user.theme.standard.Standard'/> -->
   <!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
   <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
+  <stylesheet src="/Diary.css"/>
 
   <!-- Other module inherits                                      -->
+  <inherits name="com.googlecode.objectify.Objectify" />
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='ru.abelitsky.diary.client.Diary'/>
@@ -26,4 +28,8 @@
   <source path='client'/>
   <source path='shared'/>
 
+  <!-- Use ClientFactoryImpl by default -->
+  <replace-with class="ru.abelitsky.diary.client.ClientFactoryImpl">
+    <when-type-is class="ru.abelitsky.diary.client.ClientFactory"/>
+  </replace-with>
 </module>
