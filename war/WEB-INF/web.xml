@@ -15,19 +15,10 @@
 	</filter-mapping>
 
 	<!-- Servlets -->
-	<servlet>
-		<servlet-name>mainPage</servlet-name>
-		<jsp-file>/Diary.jsp</jsp-file>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>mainPage</servlet-name>
-		<url-pattern>/diary.html</url-pattern>
-	</servlet-mapping>
 
 	<!-- Default page to serve -->
 	<welcome-file-list>
-		<welcome-file>diary.html</welcome-file>
+		<welcome-file>Diary.html</welcome-file>
 	</welcome-file-list>
 
 	<security-constraint>
