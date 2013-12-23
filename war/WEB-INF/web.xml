@@ -15,6 +15,14 @@
 	</filter-mapping>
 
 	<!-- Servlets -->
+	<servlet>
+  		<servlet-name>MainService</servlet-name>
+  		<servlet-class>ru.abelitsky.diary.server.services.MainServiceImpl</servlet-class>
+  	</servlet>
+	<servlet-mapping>
+		<servlet-name>MainService</servlet-name>
+		<url-pattern>/diary/mainService</url-pattern>
+	</servlet-mapping>
 
 	<!-- Default page to serve -->
 	<welcome-file-list>

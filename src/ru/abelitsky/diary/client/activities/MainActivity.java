@@ -1,13 +1,14 @@
 package ru.abelitsky.diary.client.activities;
 
-import com.google.gwt.activity.shared.AbstractActivity;
-import com.google.gwt.event.shared.EventBus;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import java.util.Date;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import ru.abelitsky.diary.client.ClientFactory;
 import ru.abelitsky.diary.client.views.MainView;
+import ru.abelitsky.diary.shared.model.DiaryRecordDTO;
 
-public class MainActivity extends AbstractActivity implements MainView.Presenter {
+public class MainActivity implements MainView.Presenter {
 
 	private ClientFactory clientFactory;
 
@@ -16,10 +17,18 @@ public class MainActivity extends AbstractActivity implements MainView.Presenter
 	}
 
 	@Override
-	public void start(AcceptsOneWidget panel, EventBus eventBus) {
-		MainView mainView = this.clientFactory.getMainView();
-		mainView.setPresenter(this);
-		panel.setWidget(mainView);
+	public void loadRecord(Date date) {
+		clientFactory.getMainService().getRecord(date, new AsyncCallback<DiaryRecordDTO>() {
+			@Override
+			public void onSuccess(DiaryRecordDTO result) {
+				clientFactory.getMainView().setData(result);
+			}
+
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+			}
+		});
 	}
 
 }
