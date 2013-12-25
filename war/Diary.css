@@ -1,1 +1,6 @@
 /** Add css rules here for your application. */
+.gwt-StackLayoutPanel .gwt-StackLayoutPanelContent {
+	border-style: none;
+	border-top-style: solid;
+	padding: 0px;
+}

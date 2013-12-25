@@ -15,16 +15,22 @@
 			font-size: 1.5em; 
 			font-weight: bold;
 			margin-left: 1em;
+			margin-right: 1em;
+			white-space: nowrap;
 		}
 		
-		.calendar {
-			width: 15em;
-			margin: 1px 0.3em;
+		.edit-button {
+			width: 27px;
+			height: 27px;
+			margin-right: 4px;
 		}
-			
+
+		.side-panel-container {
+			margin: 0px 4px 4px 0px;
+		}
+		
 		.editor-container {
 			padding: 0px 6px 6px 3px;
-			background-color: white;
 		}
 		
 		.editor {
@@ -35,22 +41,43 @@
 			font: 11pt Arial;
 		}
 	</ui:style>
+	<ui:with field="resources" type="ru.abelitsky.diary.client.views.resources.Resources"/>
 	<g:DockLayoutPanel unit='EM'>
 		<g:north size='5'>
 			<g:Label addStyleNames="{style.title}">Дневничок</g:Label>
 		</g:north>
+		<g:east size='16'>
+			<g:SimplePanel addStyleNames="{style.side-panel-container}">
+				<g:StackLayoutPanel unit='EM' width="100%" height="100%">
+  					<g:stack>
+    					<g:customHeader size='3'>
+    						<g:Label>Календарь</g:Label>
+    					</g:customHeader>
+    					<g:SimplePanel>
+    						<dp:DatePicker ui:field="calendar" width="100%"/>
+    					</g:SimplePanel>
+  					</g:stack>
+  					<g:stack>
+    					<g:customHeader size='3'>
+      						<g:Label>Дополнительно</g:Label>
+    					</g:customHeader>
+    					<g:Label>able</g:Label>
+  					</g:stack>
+ 				</g:StackLayoutPanel>
+ 			</g:SimplePanel>
+		</g:east>
 		<g:north size='3'>
 			<g:HorizontalPanel width="100%" height="100%" verticalAlignment="middle">
 				<g:Label ui:field="currentDate" addStyleNames="{style.currentDate}">
 					Загрузка...
 				</g:Label>
+				<g:cell horizontalAlignment="right">
+					<g:ToggleButton focus="false" addStyleNames='{style.edit-button}'>
+						<g:upFace image="{resources.editIcon}"/>
+					</g:ToggleButton>
+				</g:cell>
 			</g:HorizontalPanel>
 		</g:north>
-		<g:east size='16'>
-			<g:SimplePanel>
-				<dp:DatePicker ui:field="calendar" addStyleNames="{style.calendar}" />
-			</g:SimplePanel>
-		</g:east>
 		<g:center>
 			<g:SimplePanel styleName="{style.editor-container}">
 				<g:TextArea ui:field="recordSource" styleName="{style.editor}" />
