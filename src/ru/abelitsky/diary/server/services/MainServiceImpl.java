@@ -3,10 +3,13 @@ package ru.abelitsky.diary.server.services;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import ru.abelitsky.diary.client.services.MainService;
 import ru.abelitsky.diary.shared.model.DiaryRecordDTO;
+import ru.abelitsky.diary.shared.model.SaveActionDTO;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -20,50 +23,7 @@ public class MainServiceImpl extends RemoteServiceServlet implements MainService
 	private static final String[] MONTH_NAMES = { "января", "февраля", "марта", "апреля", "мая", "июня", "июля",
 			"августа", "сентября", "октября", "ноября", "декабря" };
 
-	private static final String testLong = "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet."
-			+ "A form of popup that has a caption area at the top and can be dragged by the user. Unlike a PopupPanel, calls to PopupPanel.setWidth(String) and PopupPanel.setHeight(String) will set the width and height of the dialog box itself, even if a widget has not been added as yet.";
+	private static Map<String, String> diary = new HashMap<String, String>();
 
 	@Override
 	public DiaryRecordDTO getRecord(Date date) {
@@ -76,15 +36,30 @@ public class MainServiceImpl extends RemoteServiceServlet implements MainService
 		SimpleDateFormat format = new SimpleDateFormat("dd MMMM yyyy, EEEE", symbols);
 		result.setDateString(format.format(date));
 
-		if (date.getDay() == 0 || date.getDay() == 6) {
-			result.setSource(testLong);
-			result.setHtml("<p>" + testLong + "</p>");
-		} else {
-			result.setSource("Test!!!");
-			result.setHtml("<p>Test!!!</p>");
+		String key = new SimpleDateFormat("yyyy-MM-dd").format(date);
+		String text = diary.get(key);
+		if (text == null) {
+			text = "";
 		}
+		result.setSource(text);
+		result.setHtml("<p>" + text + "</p>");
 
 		return result;
+	}
+
+	@Override
+	public SaveActionDTO save(SaveActionDTO action) {
+		System.out.println("Save in " + new Date());
+
+		String key = new SimpleDateFormat("yyyy-MM-dd").format(action.getDate());
+		diary.put(key, action.getData());
+		action.setData("<p>" + action.getData() + "</p>");
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return action;
 	}
 
 }

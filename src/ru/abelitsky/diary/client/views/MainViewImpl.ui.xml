@@ -76,7 +76,12 @@
 				<g:Label ui:field="currentDate" addStyleNames="{style.currentDate}">
 					Загрузка...
 				</g:Label>
-				<g:cell horizontalAlignment="right">
+				<g:cell horizontalAlignment="center">
+					<g:Label ui:field="saveLabel" visible="false">
+						Сохранение...
+					</g:Label>
+				</g:cell>
+				<g:cell width="40px" horizontalAlignment="right">
 					<g:ToggleButton ui:field="editButton" focus="false" addStyleNames='{style.edit-button}'>
 						<g:upFace image="{resources.editIcon}"/>
 					</g:ToggleButton>
