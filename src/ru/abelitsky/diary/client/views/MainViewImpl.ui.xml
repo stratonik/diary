@@ -19,6 +19,12 @@
 			white-space: nowrap;
 		}
 		
+		.save-label {
+			font-size: 0.9em; 
+			color: #888;
+			white-space: nowrap;
+		}
+		
 		.edit-button {
 			width: 27px;
 			height: 27px;
@@ -76,13 +82,11 @@
 				<g:Label ui:field="currentDate" addStyleNames="{style.currentDate}">
 					Загрузка...
 				</g:Label>
-				<g:cell horizontalAlignment="center">
-					<g:Label ui:field="saveLabel" visible="false">
-						Сохранение...
-					</g:Label>
+				<g:cell verticalAlignment="bottom">
+					<g:Label ui:field="saveLabel" addStyleNames="{style.save-label}" />
 				</g:cell>
-				<g:cell width="40px" horizontalAlignment="right">
-					<g:ToggleButton ui:field="editButton" focus="false" addStyleNames='{style.edit-button}'>
+				<g:cell horizontalAlignment="right">
+					<g:ToggleButton ui:field="editButton" addStyleNames='{style.edit-button}'>
 						<g:upFace image="{resources.editIcon}"/>
 					</g:ToggleButton>
 				</g:cell>

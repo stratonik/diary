@@ -4,10 +4,10 @@ import java.util.Date;
 
 import ru.abelitsky.diary.shared.model.DiaryRecordDTO;
 import ru.abelitsky.diary.shared.model.SaveActionDTO;
-import ru.abelitsky.diary.shared.model.SaveActionDTO.PostSaveAction;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -26,10 +26,17 @@ public class MainViewImpl extends Composite implements MainView {
 	interface MainViewImplUiBinder extends UiBinder<Widget, MainViewImpl> {
 	}
 
+	private enum SaveType {
+		autoSave, editingFinish, currentDateChange
+	}
+
 	private static MainViewImplUiBinder uiBinder = GWT.create(MainViewImplUiBinder.class);
 
 	private Presenter presenter;
 	private DiaryRecordDTO record;
+
+	private Timer saveTimer;
+	private SaveType saving;
 
 	@UiField
 	DatePicker calendar;
@@ -46,20 +53,9 @@ public class MainViewImpl extends Composite implements MainView {
 	@UiField
 	TextArea recordSource;
 
-	private Timer saveTimer;
-
 	public MainViewImpl() {
 		initWidget(uiBinder.createAndBindUi(this));
 		recordPanel.showWidget(0);
-	}
-
-	private void afterSave(PostSaveAction postSaveAction) {
-		saveLabel.setVisible(false);
-		if (postSaveAction == PostSaveAction.SwitchToHtml) {
-			recordPanel.showWidget(0);
-		} else if (postSaveAction == PostSaveAction.ChangeDate) {
-			presenter.loadRecord(calendar.getValue());
-		}
 	}
 
 	@SuppressWarnings("deprecation")
@@ -70,26 +66,91 @@ public class MainViewImpl extends Composite implements MainView {
 
 	@UiHandler("calendar")
 	void onCalendarValueChange(ValueChangeEvent<Date> event) {
-		onSave(PostSaveAction.ChangeDate);
+		onSave(SaveType.currentDateChange);
 	}
 
 	@UiHandler("editButton")
 	void onEditButtonValueChange(ValueChangeEvent<Boolean> event) {
 		if (event.getValue()) {
 			recordPanel.showWidget(1);
+			new Timer() {
+				@Override
+				public void run() {
+					recordSource.setFocus(true);
+					recordSource.setCursorPos(recordSource.getText().length());
+				}
+			}.schedule(100);
 		} else {
-			onSave(PostSaveAction.SwitchToHtml);
+			onSave(SaveType.editingFinish);
 		}
 	}
 
-	private void onSave(PostSaveAction postSaveAction) {
-		if (!recordSource.getText().equals(record.getSource())) {
-			record.setSource(recordSource.getText());
-			presenter.save(record.getDate(), record.getSource(), postSaveAction);
-			saveLabel.setVisible(true);
-		} else {
-			afterSave(postSaveAction);
+	@Override
+	protected void onLoad() {
+		super.onLoad();
+
+		saveTimer = new Timer() {
+			@Override
+			public void run() {
+				onSave(SaveType.autoSave);
+			}
+		};
+		saveTimer.scheduleRepeating(60 * 1000);
+	}
+
+	private void onSave(SaveType saveType) {
+		if (saving == null) {
+			saving = saveType;
+			if (!recordSource.getText().equals(record.getSource())) {
+				record.setSource(recordSource.getText());
+				presenter.save(record.getDate(), record.getSource());
+				saveLabel.setText("Сохранение...");
+			} else {
+				if (saveType != SaveType.autoSave) {
+					saveSuccess();
+				} else {
+					saving = null;
+				}
+			}
 		}
+	}
+
+	@Override
+	public void onSaveError() {
+		saveLabel.setText("Ошибка сохранения!");
+		calendar.setValue(record.getDate());
+		editButton.setDown(true);
+		record.setSource(""); // Для того, чтобы в следующий раз обязательно сработал вызов сохранения
+		saving = null;
+	}
+
+	@Override
+	protected void onUnload() {
+		super.onUnload();
+
+		if (saveTimer != null) {
+			saveTimer.cancel();
+			saveTimer.run();
+			saveTimer = null;
+		}
+	}
+
+	private void saveSuccess() {
+		if (saving == SaveType.autoSave) {
+			saveLabel.setText("Сохранено в "
+					+ DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.HOUR24_MINUTE).format(new Date()));
+		} else {
+			saveLabel.setText("");
+		}
+
+		if (saving == SaveType.editingFinish) {
+			recordPanel.showWidget(0);
+			editButton.setDown(false);
+			calendar.setValue(record.getDate());
+		} else if (saving == SaveType.currentDateChange) {
+			presenter.loadRecord(calendar.getValue());
+		}
+		saving = null;
 	}
 
 	@Override
@@ -105,28 +166,6 @@ public class MainViewImpl extends Composite implements MainView {
 	}
 
 	@Override
-	protected void onLoad() {
-		super.onLoad();
-		saveTimer = new Timer() {
-			@Override
-			public void run() {
-				onSave(PostSaveAction.Nothing);
-			}
-		};
-		saveTimer.scheduleRepeating(60 * 1000);
-	}
-
-	@Override
-	protected void onUnload() {
-		super.onUnload();
-		if (saveTimer != null) {
-			saveTimer.cancel();
-			saveTimer = null;
-		}
-		onSave(PostSaveAction.Nothing);
-	}
-
-	@Override
 	public void setPresenter(Presenter presenter) {
 		this.presenter = presenter;
 	}
@@ -137,7 +176,7 @@ public class MainViewImpl extends Composite implements MainView {
 			record.setHtml(result.getData());
 			recordHtml.setHTML(record.getHtml());
 		}
-		afterSave(result.getPostSaveAction());
+		saveSuccess();
 	}
 
 }
