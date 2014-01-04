@@ -7,5 +7,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/guava-15.0.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/objectify-4.0rc1.jar" sourcepath="objectify-4.0rc1-sources.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/org.eclipse.mylyn.wikitext.core_2.0.0.20131219-0024.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/org.eclipse.mylyn.wikitext.textile.core_2.0.0.20131212-0025.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
