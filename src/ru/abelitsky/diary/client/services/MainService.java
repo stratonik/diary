@@ -13,6 +13,6 @@ public interface MainService extends RemoteService {
 
 	public DiaryRecordDTO getRecord(Date date);
 
-	public SaveActionDTO save(SaveActionDTO action);
+	public DiaryRecordDTO save(SaveActionDTO action);
 
 }

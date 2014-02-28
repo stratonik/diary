@@ -44,10 +44,10 @@ public class MainActivity implements MainView.Presenter {
 		saveAction.setDate(date);
 		saveAction.setData(recordSource);
 
-		clientFactory.getMainService().save(saveAction, new AsyncCallback<SaveActionDTO>() {
+		clientFactory.getMainService().save(saveAction, new AsyncCallback<DiaryRecordDTO>() {
 			@Override
-			public void onSuccess(SaveActionDTO result) {
-				clientFactory.getMainView().updateDate(result);
+			public void onSuccess(DiaryRecordDTO result) {
+				clientFactory.getMainView().setData(result);
 			}
 
 			@Override

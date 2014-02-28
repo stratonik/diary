@@ -11,6 +11,6 @@ public interface MainServiceAsync {
 
 	void getRecord(Date date, AsyncCallback<DiaryRecordDTO> callback);
 
-	void save(SaveActionDTO action, AsyncCallback<SaveActionDTO> callback);
+	void save(SaveActionDTO action, AsyncCallback<DiaryRecordDTO> callback);
 
 }

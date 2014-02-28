@@ -97,15 +97,13 @@ public class MainServiceImpl extends RemoteServiceServlet implements MainService
 	}
 
 	@Override
-	public SaveActionDTO save(SaveActionDTO action) {
+	public DiaryRecordDTO save(SaveActionDTO action) {
 		System.out.println("Save in " + new Date());
 
 		String key = new SimpleDateFormat("yyyy-MM-dd").format(action.getDate());
 		diary.put(key, action.getData());
-		action.setData(convertToHtml(action.getData()));
-
-		System.out.println("Html:\n" + action.getData());
-		return action;
+		
+		return getRecord(action.getDate());
 	}
 
 }

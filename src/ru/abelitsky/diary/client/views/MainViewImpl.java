@@ -5,8 +5,8 @@ import java.util.Date;
 import ru.abelitsky.diary.client.ClientFactory;
 import ru.abelitsky.diary.client.views.dialogs.JoinDaysDialog;
 import ru.abelitsky.diary.client.views.utils.MainViewEventBus;
+import ru.abelitsky.diary.client.views.utils.MainViewEventBusTask;
 import ru.abelitsky.diary.shared.model.DiaryRecordDTO;
-import ru.abelitsky.diary.shared.model.SaveActionDTO;
 import ru.abelitsky.diary.shared.utils.DateUtils;
 
 import com.google.gwt.core.client.GWT;
@@ -44,6 +44,8 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 	private Presenter presenter;
 	private DiaryRecordDTO record;
 
+	private DiaryRecordProcessTask currentTask;
+
 	private Timer saveTimer;
 	private SaveType saving;
 
@@ -80,7 +82,8 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 
 	@UiHandler("calendar")
 	void onCalendarValueChange(ValueChangeEvent<Date> event) {
-		onSave(SaveType.currentDateChange);
+		eventBus.put(new SaveTask());
+		eventBus.put(new ChangeDateTask());
 	}
 
 	@UiHandler("joinDaysButton")
@@ -114,7 +117,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 		saveTimer = new Timer() {
 			@Override
 			public void run() {
-				onSave(SaveType.autoSave);
+				eventBus.put(new SaveTask());
 			}
 		};
 		saveTimer.scheduleRepeating(60 * 1000);
@@ -142,7 +145,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 		saveLabel.setText("Ошибка сохранения!");
 		calendar.setValue(record.getDate());
 		editButton.setDown(true);
-		record.setSource("");	// Для того, чтобы в следующий раз обязательно
+		record.setSource(""); // Для того, чтобы в следующий раз обязательно
 								// сработал вызов сохранения
 		saving = null;
 	}
@@ -159,19 +162,10 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 	}
 
 	private void saveSuccess() {
-		if (saving == SaveType.autoSave) {
-			saveLabel.setText("Сохранено в "
-					+ DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.HOUR24_MINUTE).format(new Date()));
-		} else {
-			saveLabel.setText("");
-		}
-
 		if (saving == SaveType.editingFinish) {
 			recordPanel.showWidget(0);
 			editButton.setDown(false);
 			calendar.setValue(record.getDate());
-		} else if (saving == SaveType.currentDateChange) {
-			presenter.loadRecord(calendar.getValue());
 		}
 		saving = null;
 	}
@@ -180,13 +174,11 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 	public void setData(DiaryRecordDTO record) {
 		this.record = record;
 
-		calendar.setValue(record.getDate(), false);
-		currentDateLabel.setText(record.getDateString());
-		recordHtml.setHTML(record.getHtml());
-		recordSourceTextArea.setText(record.getSource());
-		saveLabel.setText("");
-
-		editButton.setValue(DateUtils.isEquals(record.getDate(), new Date()), true);
+		if (currentTask != null) {
+			currentTask.process(record);
+		} else {
+			new ChangeDateTask().process(record);
+		}
 	}
 
 	@Override
@@ -194,13 +186,85 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 		this.presenter = presenter;
 	}
 
-	@Override
-	public void updateDate(SaveActionDTO result) {
-		if (DateUtils.isEquals(record.getDate(), result.getDate())) {
-			record.setHtml(result.getData());
-			recordHtml.setHTML(record.getHtml());
-		}
-		saveSuccess();
+	interface DiaryRecordProcessTask extends MainViewEventBusTask {
+
+		void process(DiaryRecordDTO record);
+
+		void processFault(Throwable caught);
+
 	}
 
+	class AbstractDiaryRecordProcessTask implements DiaryRecordProcessTask {
+
+		private MainViewEventBus eventBus;
+
+		@Override
+		public void run(MainViewEventBus eventBus) {
+			this.eventBus = eventBus;
+
+			currentTask = this;
+			eventBus.stop();
+		}
+
+		@Override
+		public void process(DiaryRecordDTO record) {
+			currentTask = null;
+			if (eventBus != null) {
+				eventBus.start();
+			}
+		}
+
+		@Override
+		public void processFault(Throwable caught) {
+			currentTask = null;
+			if (eventBus != null) {
+				eventBus.start();
+			}
+		}
+
+	}
+
+	class ChangeDateTask extends AbstractDiaryRecordProcessTask {
+
+		@Override
+		public void run(MainViewEventBus eventBus) {
+			presenter.loadRecord(calendar.getValue());
+			super.run(eventBus);
+		}
+
+		@Override
+		public void process(DiaryRecordDTO record) {
+			calendar.setValue(record.getDate(), false);
+			currentDateLabel.setText(record.getDateString());
+			recordHtml.setHTML(record.getHtml());
+			recordSourceTextArea.setText(record.getSource());
+
+			saveLabel.setText("");
+			editButton.setValue(DateUtils.isEquals(record.getDate(), new Date()), true);
+
+			super.process(record);
+		}
+
+	}
+
+	class SaveTask extends AbstractDiaryRecordProcessTask {
+
+		@Override
+		public void run(MainViewEventBus eventBus) {
+			if (!recordSourceTextArea.getText().equals(record.getSource())) {
+				saveLabel.setText("Сохранение...");
+				presenter.save(record.getDate(), recordSourceTextArea.getText());
+				super.run(eventBus);
+			}
+		}
+
+		@Override
+		public void process(DiaryRecordDTO record) {
+			recordHtml.setHTML(record.getHtml());
+			saveLabel.setText("Сохранено в "
+					+ DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.HOUR24_MINUTE).format(new Date()));
+			super.process(record);
+		}
+
+	}
 }
