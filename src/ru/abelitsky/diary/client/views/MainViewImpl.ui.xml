@@ -64,9 +64,10 @@
     					<g:customHeader size='3'>
    							<g:Label addStyleNames="{style.side-panel-caption}">Календарь</g:Label>
     					</g:customHeader>
-    					<g:SimplePanel>
+    					<g:VerticalPanel width="100%">
     						<dp:DatePicker ui:field="calendar" width="100%"/>
-    					</g:SimplePanel>
+    						<g:Button ui:field="joinDaysButton" width="100%">Объединить...</g:Button>
+    					</g:VerticalPanel>
   					</g:stack>
   					<g:stack>
     					<g:customHeader size='3'>
@@ -79,7 +80,7 @@
 		</g:east>
 		<g:north size='3'>
 			<g:HorizontalPanel width="100%" height="100%" verticalAlignment="middle">
-				<g:Label ui:field="currentDate" addStyleNames="{style.current-date}">
+				<g:Label ui:field="currentDateLabel" addStyleNames="{style.current-date}">
 					Загрузка...
 				</g:Label>
 				<g:cell verticalAlignment="bottom">
@@ -98,7 +99,7 @@
 					<g:HTML ui:field="recordHtml" />
 				</g:ScrollPanel>
 				<g:SimplePanel styleName="{style.editor-container}">
-					<g:TextArea ui:field="recordSource" styleName="{style.editor}" />
+					<g:TextArea ui:field="recordSourceTextArea" styleName="{style.editor}" />
 				</g:SimplePanel>
 			</g:DeckLayoutPanel>
 		</g:center>

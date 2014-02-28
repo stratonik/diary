@@ -22,6 +22,8 @@ public interface MainView extends IsWidget {
 		public void loadRecord(Date date);
 
 		public void save(Date date, String recordSource);
+		
+		public void joinDays(Date beginDate, Date endDate, String recordSource);
 
 	}
 }

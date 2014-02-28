@@ -2,16 +2,21 @@ package ru.abelitsky.diary.client.views;
 
 import java.util.Date;
 
+import ru.abelitsky.diary.client.ClientFactory;
+import ru.abelitsky.diary.client.views.dialogs.JoinDaysDialog;
 import ru.abelitsky.diary.shared.model.DiaryRecordDTO;
 import ru.abelitsky.diary.shared.model.SaveActionDTO;
+import ru.abelitsky.diary.shared.utils.DateUtils;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DeckLayoutPanel;
 import com.google.gwt.user.client.ui.HTML;
@@ -21,16 +26,18 @@ import com.google.gwt.user.client.ui.ToggleButton;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.datepicker.client.DatePicker;
 
-public class MainViewImpl extends Composite implements MainView {
+public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.Presenter {
 
 	interface MainViewImplUiBinder extends UiBinder<Widget, MainViewImpl> {
 	}
 
 	private enum SaveType {
-		autoSave, editingFinish, currentDateChange
+		autoSave, editingFinish, currentDateChange, daysJoin
 	}
 
 	private static MainViewImplUiBinder uiBinder = GWT.create(MainViewImplUiBinder.class);
+
+	private ClientFactory clientFactory;
 
 	private Presenter presenter;
 	private DiaryRecordDTO record;
@@ -41,7 +48,7 @@ public class MainViewImpl extends Composite implements MainView {
 	@UiField
 	DatePicker calendar;
 	@UiField
-	Label currentDate;
+	Label currentDateLabel;
 	@UiField
 	Label saveLabel;
 	@UiField
@@ -51,22 +58,35 @@ public class MainViewImpl extends Composite implements MainView {
 	@UiField
 	HTML recordHtml;
 	@UiField
-	TextArea recordSource;
+	TextArea recordSourceTextArea;
+	@UiField
+	Button joinDaysButton;
 
-	public MainViewImpl() {
+	public MainViewImpl(ClientFactory clientFactory) {
+		this.clientFactory = clientFactory;
+
 		initWidget(uiBinder.createAndBindUi(this));
 		recordPanel.showWidget(0);
 	}
 
-	@SuppressWarnings("deprecation")
-	private boolean isDateEquals(Date date1, Date date2) {
-		return (date1.getYear() == date2.getYear()) && (date1.getMonth() == date2.getMonth())
-				&& (date1.getDate() == date2.getDate());
+	public void join(Date fromDate, Date toDate) {
+		saving = SaveType.daysJoin;
+		record.setSource(recordSourceTextArea.getText());
+		presenter.joinDays(fromDate, toDate, recordSourceTextArea.getText());
+		saveLabel.setText("Объединение...");
 	}
 
 	@UiHandler("calendar")
 	void onCalendarValueChange(ValueChangeEvent<Date> event) {
 		onSave(SaveType.currentDateChange);
+	}
+
+	@UiHandler("joinDaysButton")
+	void onJoinDaysButtonClick(ClickEvent event) {
+		JoinDaysDialog dialog = clientFactory.getJoinDaysDialog();
+		dialog.setPresenter(this);
+		dialog.setCurrentDate(record.getDate());
+		dialog.showDialog();
 	}
 
 	@UiHandler("editButton")
@@ -76,8 +96,8 @@ public class MainViewImpl extends Composite implements MainView {
 			new Timer() {
 				@Override
 				public void run() {
-					recordSource.setFocus(true);
-					recordSource.setCursorPos(recordSource.getText().length());
+					recordSourceTextArea.setFocus(true);
+					recordSourceTextArea.setCursorPos(recordSourceTextArea.getText().length());
 				}
 			}.schedule(100);
 		} else {
@@ -101,8 +121,8 @@ public class MainViewImpl extends Composite implements MainView {
 	private void onSave(SaveType saveType) {
 		if (saving == null) {
 			saving = saveType;
-			if (!recordSource.getText().equals(record.getSource())) {
-				record.setSource(recordSource.getText());
+			if (!recordSourceTextArea.getText().equals(record.getSource())) {
+				record.setSource(recordSourceTextArea.getText());
 				presenter.save(record.getDate(), record.getSource());
 				saveLabel.setText("Сохранение...");
 			} else {
@@ -120,7 +140,8 @@ public class MainViewImpl extends Composite implements MainView {
 		saveLabel.setText("Ошибка сохранения!");
 		calendar.setValue(record.getDate());
 		editButton.setDown(true);
-		record.setSource(""); // Для того, чтобы в следующий раз обязательно сработал вызов сохранения
+		record.setSource("");	// Для того, чтобы в следующий раз обязательно
+								// сработал вызов сохранения
 		saving = null;
 	}
 
@@ -158,11 +179,12 @@ public class MainViewImpl extends Composite implements MainView {
 		this.record = record;
 
 		calendar.setValue(record.getDate(), false);
-		currentDate.setText(record.getDateString());
+		currentDateLabel.setText(record.getDateString());
 		recordHtml.setHTML(record.getHtml());
-		recordSource.setText(record.getSource());
+		recordSourceTextArea.setText(record.getSource());
+		saveLabel.setText("");
 
-		editButton.setValue(isDateEquals(record.getDate(), new Date()), true);
+		editButton.setValue(DateUtils.isEquals(record.getDate(), new Date()), true);
 	}
 
 	@Override
@@ -172,7 +194,7 @@ public class MainViewImpl extends Composite implements MainView {
 
 	@Override
 	public void updateDate(SaveActionDTO result) {
-		if (isDateEquals(record.getDate(), result.getDate())) {
+		if (DateUtils.isEquals(record.getDate(), result.getDate())) {
 			record.setHtml(result.getData());
 			recordHtml.setHTML(record.getHtml());
 		}

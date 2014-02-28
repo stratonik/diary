@@ -18,6 +18,12 @@ public class MainActivity implements MainView.Presenter {
 	}
 
 	@Override
+	public void joinDays(Date beginDate, Date endDate, String recordSource) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
 	public void loadRecord(Date date) {
 		clientFactory.getMainService().getRecord(date, new AsyncCallback<DiaryRecordDTO>() {
 			@Override

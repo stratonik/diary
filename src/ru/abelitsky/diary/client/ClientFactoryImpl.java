@@ -7,12 +7,22 @@ import ru.abelitsky.diary.client.services.MainService;
 import ru.abelitsky.diary.client.services.MainServiceAsync;
 import ru.abelitsky.diary.client.views.MainView;
 import ru.abelitsky.diary.client.views.MainViewImpl;
+import ru.abelitsky.diary.client.views.dialogs.JoinDaysDialog;
+import ru.abelitsky.diary.client.views.dialogs.JoinDaysDialogImpl;
 
 public class ClientFactoryImpl implements ClientFactory {
 
 	private MainServiceAsync mainService;
 	private MainView.Presenter mainActivity;
 	private MainView mainView;
+	private JoinDaysDialog joinDaysDialog;
+
+	public JoinDaysDialog getJoinDaysDialog() {
+		if (joinDaysDialog == null) {
+			joinDaysDialog = new JoinDaysDialogImpl();
+		}
+		return joinDaysDialog;
+	}
 
 	public MainView.Presenter getMainActivity() {
 		if (mainActivity == null) {
@@ -30,7 +40,7 @@ public class ClientFactoryImpl implements ClientFactory {
 
 	public MainView getMainView() {
 		if (mainView == null) {
-			mainView = new MainViewImpl();
+			mainView = new MainViewImpl(this);
 		}
 		return mainView;
 	}

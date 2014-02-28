@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui" xmlns:dp="urn:import:com.google.gwt.user.datepicker.client">
+	<g:VerticalPanel spacing="4">
+		<g:Grid>
+			<g:row>
+				<g:customCell>
+					<g:RadioButton ui:field="beginDateChoice" name="changedDateChoice"/>
+				</g:customCell>
+				<g:customCell>
+					<g:Label>С:</g:Label>
+				</g:customCell>
+				<g:customCell>
+					<dp:DateBox ui:field="beginDate"/>
+				</g:customCell>
+			</g:row>
+			<g:row>
+				<g:customCell>
+					<g:RadioButton ui:field="endDateChoice" name="changedDateChoice"/>
+				</g:customCell>
+				<g:customCell>
+					<g:Label>По:</g:Label>
+				</g:customCell>
+				<g:customCell>
+					<dp:DateBox ui:field="endDate"/>
+				</g:customCell>
+			</g:row>
+		</g:Grid>
+		<g:cell horizontalAlignment="right">
+			<g:HorizontalPanel spacing="2">
+				<g:Button ui:field="okButton">Ок</g:Button>
+				<g:Button ui:field="cancelButton">Отмена</g:Button>
+			</g:HorizontalPanel>
+		</g:cell>
+	</g:VerticalPanel>
+</ui:UiBinder>
