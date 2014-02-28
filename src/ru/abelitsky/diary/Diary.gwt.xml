@@ -37,4 +37,7 @@
   <replace-with class="ru.abelitsky.diary.client.ClientFactoryImpl">
     <when-type-is class="ru.abelitsky.diary.client.ClientFactory"/>
   </replace-with>
+  <replace-with class="ru.abelitsky.diary.client.views.utils.MainViewEventBusImpl">
+    <when-type-is class="ru.abelitsky.diary.client.views.utils.MainViewEventBus"/>
+  </replace-with>
 </module>

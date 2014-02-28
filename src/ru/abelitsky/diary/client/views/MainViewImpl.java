@@ -4,6 +4,7 @@ import java.util.Date;
 
 import ru.abelitsky.diary.client.ClientFactory;
 import ru.abelitsky.diary.client.views.dialogs.JoinDaysDialog;
+import ru.abelitsky.diary.client.views.utils.MainViewEventBus;
 import ru.abelitsky.diary.shared.model.DiaryRecordDTO;
 import ru.abelitsky.diary.shared.model.SaveActionDTO;
 import ru.abelitsky.diary.shared.utils.DateUtils;
@@ -38,6 +39,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 	private static MainViewImplUiBinder uiBinder = GWT.create(MainViewImplUiBinder.class);
 
 	private ClientFactory clientFactory;
+	private MainViewEventBus eventBus = GWT.create(MainViewEventBus.class);
 
 	private Presenter presenter;
 	private DiaryRecordDTO record;
