@@ -32,22 +32,19 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 	interface MainViewImplUiBinder extends UiBinder<Widget, MainViewImpl> {
 	}
 
-	private enum SaveType {
-		autoSave, editingFinish, currentDateChange, daysJoin
-	}
-
 	private static MainViewImplUiBinder uiBinder = GWT.create(MainViewImplUiBinder.class);
 
 	private ClientFactory clientFactory;
-	private MainViewEventBus eventBus = GWT.create(MainViewEventBus.class);
 
-	private Presenter presenter;
-	private DiaryRecordDTO record;
+	private MainViewEventBus eventBus = GWT.create(MainViewEventBus.class);
 
 	private DiaryRecordProcessTask currentTask;
 
 	private Timer saveTimer;
-	private SaveType saving;
+
+	private Presenter presenter;
+
+	private DiaryRecordDTO record;
 
 	@UiField
 	DatePicker calendar;
@@ -74,7 +71,6 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 	}
 
 	public void join(Date fromDate, Date toDate) {
-		saving = SaveType.daysJoin;
 		record.setSource(recordSourceTextArea.getText());
 		presenter.joinDays(fromDate, toDate, recordSourceTextArea.getText());
 		saveLabel.setText("Объединение...");
@@ -82,8 +78,8 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 
 	@UiHandler("calendar")
 	void onCalendarValueChange(ValueChangeEvent<Date> event) {
-		eventBus.put(new SaveTask());
-		eventBus.put(new ChangeDateTask());
+		eventBus.add(new SaveTask());
+		eventBus.add(new ChangeDateTask());
 	}
 
 	@UiHandler("joinDaysButton")
@@ -96,18 +92,10 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 
 	@UiHandler("editButton")
 	void onEditButtonValueChange(ValueChangeEvent<Boolean> event) {
-		if (event.getValue()) {
-			recordPanel.showWidget(1);
-			new Timer() {
-				@Override
-				public void run() {
-					recordSourceTextArea.setFocus(true);
-					recordSourceTextArea.setCursorPos(recordSourceTextArea.getText().length());
-				}
-			}.schedule(100);
-		} else {
-			onSave(SaveType.editingFinish);
+		if (!event.getValue()) {
+			eventBus.add(new SaveTask());
 		}
+		eventBus.add(new ChangeEditModeTask(event.getValue()));
 	}
 
 	@Override
@@ -117,37 +105,19 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 		saveTimer = new Timer() {
 			@Override
 			public void run() {
-				eventBus.put(new SaveTask());
+				eventBus.add(new SaveTask());
 			}
 		};
 		saveTimer.scheduleRepeating(60 * 1000);
 	}
 
-	private void onSave(SaveType saveType) {
-		if (saving == null) {
-			saving = saveType;
-			if (!recordSourceTextArea.getText().equals(record.getSource())) {
-				record.setSource(recordSourceTextArea.getText());
-				presenter.save(record.getDate(), record.getSource());
-				saveLabel.setText("Сохранение...");
-			} else {
-				if (saveType != SaveType.autoSave) {
-					saveSuccess();
-				} else {
-					saving = null;
-				}
-			}
-		}
-	}
-
 	@Override
-	public void onSaveError() {
-		saveLabel.setText("Ошибка сохранения!");
-		calendar.setValue(record.getDate());
-		editButton.setDown(true);
-		record.setSource(""); // Для того, чтобы в следующий раз обязательно
-								// сработал вызов сохранения
-		saving = null;
+	public void onError(Throwable caught) {
+		if (currentTask != null) {
+			currentTask.processFault(caught);
+		} else {
+			new ChangeDateTask().processFault(caught);
+		}
 	}
 
 	@Override
@@ -159,15 +129,6 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 			saveTimer.run();
 			saveTimer = null;
 		}
-	}
-
-	private void saveSuccess() {
-		if (saving == SaveType.editingFinish) {
-			recordPanel.showWidget(0);
-			editButton.setDown(false);
-			calendar.setValue(record.getDate());
-		}
-		saving = null;
 	}
 
 	@Override
@@ -194,31 +155,28 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 
 	}
 
-	class AbstractDiaryRecordProcessTask implements DiaryRecordProcessTask {
+	abstract class AbstractDiaryRecordProcessTask implements DiaryRecordProcessTask {
 
 		private MainViewEventBus eventBus;
 
-		@Override
-		public void run(MainViewEventBus eventBus) {
-			this.eventBus = eventBus;
-
-			currentTask = this;
-			eventBus.stop();
-		}
-
-		@Override
-		public void process(DiaryRecordDTO record) {
+		protected void startEventBus() {
 			currentTask = null;
 			if (eventBus != null) {
 				eventBus.start();
 			}
 		}
 
+		protected void stopEventBus(MainViewEventBus eventBus) {
+			this.eventBus = eventBus;
+			currentTask = this;
+			eventBus.stop();
+		}
+
 		@Override
 		public void processFault(Throwable caught) {
 			currentTask = null;
 			if (eventBus != null) {
-				eventBus.start();
+				eventBus.reset();
 			}
 		}
 
@@ -229,7 +187,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 		@Override
 		public void run(MainViewEventBus eventBus) {
 			presenter.loadRecord(calendar.getValue());
-			super.run(eventBus);
+			stopEventBus(eventBus);
 		}
 
 		@Override
@@ -242,7 +200,16 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 			saveLabel.setText("");
 			editButton.setValue(DateUtils.isEquals(record.getDate(), new Date()), true);
 
-			super.process(record);
+			startEventBus();
+		}
+
+		@Override
+		public void processFault(Throwable caught) {
+			saveLabel.setText("Ошибка при загрузке данных");
+			if (record != null) {
+				calendar.setValue(record.getDate());
+			}
+			super.processFault(caught);
 		}
 
 	}
@@ -254,7 +221,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 			if (!recordSourceTextArea.getText().equals(record.getSource())) {
 				saveLabel.setText("Сохранение...");
 				presenter.save(record.getDate(), recordSourceTextArea.getText());
-				super.run(eventBus);
+				stopEventBus(eventBus);
 			}
 		}
 
@@ -263,8 +230,45 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 			recordHtml.setHTML(record.getHtml());
 			saveLabel.setText("Сохранено в "
 					+ DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.HOUR24_MINUTE).format(new Date()));
-			super.process(record);
+			startEventBus();
+		}
+
+		@Override
+		public void processFault(Throwable caught) {
+			saveLabel.setText("Ошибка сохранения!");
+			calendar.setValue(record.getDate());
+			editButton.setDown(true);
+			super.processFault(caught);
 		}
 
 	}
+
+	class ChangeEditModeTask implements MainViewEventBusTask {
+
+		private boolean editMode;
+
+		public ChangeEditModeTask(boolean editMode) {
+			this.editMode = editMode;
+		}
+
+		@Override
+		public void run(MainViewEventBus eventBus) {
+			if (editMode) {
+				recordPanel.showWidget(1);
+				editButton.setDown(true);
+				new Timer() {
+					@Override
+					public void run() {
+						recordSourceTextArea.setFocus(true);
+						recordSourceTextArea.setCursorPos(recordSourceTextArea.getText().length());
+					}
+				}.schedule(100);
+			} else {
+				recordPanel.showWidget(0);
+				editButton.setDown(false);
+			}
+		}
+
+	}
+
 }

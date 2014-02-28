@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.IsWidget;
 
 public interface MainView extends IsWidget {
 
-	public void onSaveError();
+	public void onError(Throwable caught);
 	
 	public void setData(DiaryRecordDTO record);
 

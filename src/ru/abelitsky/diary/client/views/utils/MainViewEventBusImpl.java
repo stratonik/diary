@@ -7,6 +7,12 @@ public class MainViewEventBusImpl implements MainViewEventBus {
 	private boolean isStopped;
 	private LinkedList<MainViewEventBusTask> tasks = new LinkedList<MainViewEventBusTask>();
 
+	@Override
+	public void add(MainViewEventBusTask task) {
+		tasks.addLast(task);
+		processTasks();
+	}
+
 	private void processTasks() {
 		if (!isStopped) {
 			while (!tasks.isEmpty()) {
@@ -18,10 +24,11 @@ public class MainViewEventBusImpl implements MainViewEventBus {
 		}
 	}
 
+	
 	@Override
-	public void put(MainViewEventBusTask task) {
-		tasks.addLast(task);
-		processTasks();
+	public void reset() {
+		isStopped = false;
+		tasks.clear();
 	}
 
 	@Override

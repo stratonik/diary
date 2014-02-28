@@ -33,7 +33,7 @@ public class MainActivity implements MainView.Presenter {
 
 			@Override
 			public void onFailure(Throwable caught) {
-				// TODO Auto-generated method stub
+				clientFactory.getMainView().onError(caught);
 			}
 		});
 	}
@@ -52,7 +52,7 @@ public class MainActivity implements MainView.Presenter {
 
 			@Override
 			public void onFailure(Throwable caught) {
-				clientFactory.getMainView().onSaveError();
+				clientFactory.getMainView().onError(caught);
 			}
 		});
 	}
