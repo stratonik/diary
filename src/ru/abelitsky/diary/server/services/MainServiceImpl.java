@@ -3,10 +3,9 @@ package ru.abelitsky.diary.server.services;
 import java.io.StringWriter;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,13 +14,18 @@ import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder;
 import org.eclipse.mylyn.wikitext.textile.core.TextileLanguage;
 
 import ru.abelitsky.diary.client.services.MainService;
+import ru.abelitsky.diary.server.OfyService;
+import ru.abelitsky.diary.server.model.Record;
 import ru.abelitsky.diary.shared.model.DiaryRecordDTO;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.Work;
+import com.googlecode.objectify.cmd.Query;
 
 public class MainServiceImpl extends RemoteServiceServlet implements MainService {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	private static final String[] WEEKDAY_NAMES = { "", "воскресенье", "понедельник", "вторник", "среда", "четверг",
 			"пятница", "суббота" };
@@ -31,7 +35,32 @@ public class MainServiceImpl extends RemoteServiceServlet implements MainService
 
 	private static final String TAG_PATTERN = "^@tag\\s(.*?)$";
 
-	private static Map<String, String> diary = new HashMap<String, String>();
+	private DiaryRecordDTO convertToDTO(Date date, Record record) {
+		DiaryRecordDTO result = new DiaryRecordDTO();
+		result.setDate(date);
+
+		DateFormatSymbols symbols = DateFormatSymbols.getInstance(new Locale("ru"));
+		symbols.setMonths(MONTH_NAMES);
+		symbols.setWeekdays(WEEKDAY_NAMES);
+		SimpleDateFormat format = new SimpleDateFormat("dd MMMM yyyy, EEEE", symbols);
+
+		String text = "";
+		if (record != null) {
+			if (record.getStartDate().equals(record.getEndDate())) {
+				result.setDateString(format.format(record.getStartDate()));
+			} else {
+				result.setDateString(format.format(record.getStartDate()) + " - " + format.format(record.getEndDate()));
+			}
+			text = record.getText();
+		} else {
+			result.setDateString(format.format(date));
+		}
+
+		result.setSource(text);
+		result.setHtml(convertToHtml(text));
+
+		return result;
+	}
 
 	private String convertToHtml(String source) {
 		Pattern tagPattern = Pattern.compile(TAG_PATTERN, Pattern.MULTILINE);
@@ -75,24 +104,19 @@ public class MainServiceImpl extends RemoteServiceServlet implements MainService
 
 	@Override
 	public DiaryRecordDTO get(Date date) {
-		DiaryRecordDTO result = new DiaryRecordDTO();
-		result.setDate(date);
+		date = removeTimePart(date);
+		Record record = load(date);
+		return convertToDTO(date, record);
+	}
 
-		DateFormatSymbols symbols = DateFormatSymbols.getInstance(new Locale("ru"));
-		symbols.setMonths(MONTH_NAMES);
-		symbols.setWeekdays(WEEKDAY_NAMES);
-		SimpleDateFormat format = new SimpleDateFormat("dd MMMM yyyy, EEEE", symbols);
-		result.setDateString(format.format(date));
-
-		String key = new SimpleDateFormat("yyyy-MM-dd").format(date);
-		String text = diary.get(key);
-		if (text == null) {
-			text = "";
+	private Record load(Date date) {
+		Query<Record> query = OfyService.ofy().load().type(Record.class);
+		Record record = query.filter("startDate <= ", date).order("-startDate").first().now();
+		if ((record != null) && !record.getEndDate().before(date)) {
+			return record;
+		} else {
+			return null;
 		}
-		result.setSource(text);
-		result.setHtml(convertToHtml(text));
-
-		return result;
 	}
 
 	@Override
@@ -100,14 +124,51 @@ public class MainServiceImpl extends RemoteServiceServlet implements MainService
 		return get(currentDate);
 	}
 
-	@Override
-	public DiaryRecordDTO save(Date date, String record) {
-		System.out.println("Save in " + new Date());
+	private Date removeTimePart(Date date) {
+		if (date != null) {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(date);
+			calendar.set(Calendar.HOUR_OF_DAY, 0);
+			calendar.set(Calendar.MINUTE, 0);
+			calendar.set(Calendar.SECOND, 0);
+			calendar.set(Calendar.MILLISECOND, 0);
+			return calendar.getTime();
+		} else {
+			return null;
+		}
+	}
 
-		String key = new SimpleDateFormat("yyyy-MM-dd").format(date);
-		diary.put(key, record);
-		
-		return get(date);
+	@Override
+	public DiaryRecordDTO save(Date date, String recordText) {
+		date = removeTimePart(date);
+
+		Record record = load(date);
+		if (record == null) {
+			record = new Record();
+			record.setStartDate(date);
+			record.setEndDate(date);
+		}
+		record.setText(recordText);
+
+		record = OfyService.ofy().transact(new SaveWork(record));
+
+		return convertToDTO(date, record);
+	}
+
+	private class SaveWork implements Work<Record> {
+
+		private Record record;
+
+		public SaveWork(Record record) {
+			this.record = record;
+		}
+
+		@Override
+		public Record run() {
+			Key<Record> key = OfyService.ofy().save().entity(record).now();
+			return OfyService.ofy().load().key(key).now();
+		}
+
 	}
 
 }

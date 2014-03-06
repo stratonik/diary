@@ -146,7 +146,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 		this.presenter = presenter;
 	}
 
-	interface DiaryRecordProcessTask extends MainViewEventBusTask {
+	private interface DiaryRecordProcessTask extends MainViewEventBusTask {
 
 		void process(DiaryRecordDTO record);
 
@@ -154,7 +154,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 
 	}
 
-	abstract class AbstractDiaryRecordProcessTask implements DiaryRecordProcessTask {
+	private abstract class AbstractDiaryRecordProcessTask implements DiaryRecordProcessTask {
 
 		private MainViewEventBus eventBus;
 
@@ -181,7 +181,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 
 	}
 
-	class LoadTask extends AbstractDiaryRecordProcessTask {
+	private class LoadTask extends AbstractDiaryRecordProcessTask {
 
 		private Date date;
 
@@ -224,7 +224,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 
 	}
 
-	class SaveTask extends AbstractDiaryRecordProcessTask {
+	private class SaveTask extends AbstractDiaryRecordProcessTask {
 
 		@Override
 		public void run(MainViewEventBus eventBus) {
@@ -253,7 +253,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 
 	}
 
-	class ChangeEditModeTask implements MainViewEventBusTask {
+	private class ChangeEditModeTask implements MainViewEventBusTask {
 
 		private boolean editMode;
 
@@ -281,7 +281,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 
 	}
 
-	class JoinDaysTask extends LoadTask {
+	private class JoinDaysTask extends LoadTask {
 
 		private Date fromDate;
 		private Date toDate;
