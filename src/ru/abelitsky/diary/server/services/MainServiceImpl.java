@@ -16,7 +16,6 @@ import org.eclipse.mylyn.wikitext.textile.core.TextileLanguage;
 
 import ru.abelitsky.diary.client.services.MainService;
 import ru.abelitsky.diary.shared.model.DiaryRecordDTO;
-import ru.abelitsky.diary.shared.model.SaveActionDTO;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -75,7 +74,7 @@ public class MainServiceImpl extends RemoteServiceServlet implements MainService
 	}
 
 	@Override
-	public DiaryRecordDTO getRecord(Date date) {
+	public DiaryRecordDTO get(Date date) {
 		DiaryRecordDTO result = new DiaryRecordDTO();
 		result.setDate(date);
 
@@ -97,13 +96,18 @@ public class MainServiceImpl extends RemoteServiceServlet implements MainService
 	}
 
 	@Override
-	public DiaryRecordDTO save(SaveActionDTO action) {
+	public DiaryRecordDTO join(Date fromDate, Date toDate, Date currentDate) {
+		return get(currentDate);
+	}
+
+	@Override
+	public DiaryRecordDTO save(Date date, String record) {
 		System.out.println("Save in " + new Date());
 
-		String key = new SimpleDateFormat("yyyy-MM-dd").format(action.getDate());
-		diary.put(key, action.getData());
+		String key = new SimpleDateFormat("yyyy-MM-dd").format(date);
+		diary.put(key, record);
 		
-		return getRecord(action.getDate());
+		return get(date);
 	}
 
 }

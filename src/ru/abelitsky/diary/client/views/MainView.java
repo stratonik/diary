@@ -16,11 +16,11 @@ public interface MainView extends IsWidget {
 
 	public interface Presenter {
 
+		public void joinRecords(Date fromDate, Date toDate, Date currentDate);
+
 		public void loadRecord(Date date);
 
-		public void save(Date date, String recordSource);
-		
-		public void joinDays(Date beginDate, Date endDate, String recordSource);
+		public void updateRecord(Date date, String recordSource);
 
 	}
 }

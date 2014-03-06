@@ -71,15 +71,14 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 	}
 
 	public void join(Date fromDate, Date toDate) {
-		record.setSource(recordSourceTextArea.getText());
-		presenter.joinDays(fromDate, toDate, recordSourceTextArea.getText());
-		saveLabel.setText("Объединение...");
+		eventBus.add(new SaveTask());
+		eventBus.add(new JoinDaysTask(fromDate, toDate, record.getDate()));
 	}
 
 	@UiHandler("calendar")
 	void onCalendarValueChange(ValueChangeEvent<Date> event) {
 		eventBus.add(new SaveTask());
-		eventBus.add(new ChangeDateTask());
+		eventBus.add(new LoadTask(event.getValue()));
 	}
 
 	@UiHandler("joinDaysButton")
@@ -116,7 +115,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 		if (currentTask != null) {
 			currentTask.processFault(caught);
 		} else {
-			new ChangeDateTask().processFault(caught);
+			new LoadTask(record.getDate()).processFault(caught);
 		}
 	}
 
@@ -138,7 +137,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 		if (currentTask != null) {
 			currentTask.process(record);
 		} else {
-			new ChangeDateTask().process(record);
+			new LoadTask(record.getDate()).process(record);
 		}
 	}
 
@@ -182,11 +181,22 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 
 	}
 
-	class ChangeDateTask extends AbstractDiaryRecordProcessTask {
+	class LoadTask extends AbstractDiaryRecordProcessTask {
+
+		private Date date;
+
+		public LoadTask(Date date) {
+			this.date = date;
+		}
+
+		protected Date getDate() {
+			return date;
+		}
 
 		@Override
 		public void run(MainViewEventBus eventBus) {
-			presenter.loadRecord(calendar.getValue());
+			saveLabel.setText("Загрузка...");
+			presenter.loadRecord(getDate());
 			stopEventBus(eventBus);
 		}
 
@@ -205,11 +215,11 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 
 		@Override
 		public void processFault(Throwable caught) {
+			super.processFault(caught);
 			saveLabel.setText("Ошибка при загрузке данных");
 			if (record != null) {
 				calendar.setValue(record.getDate());
 			}
-			super.processFault(caught);
 		}
 
 	}
@@ -220,7 +230,7 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 		public void run(MainViewEventBus eventBus) {
 			if (!recordSourceTextArea.getText().equals(record.getSource())) {
 				saveLabel.setText("Сохранение...");
-				presenter.save(record.getDate(), recordSourceTextArea.getText());
+				presenter.updateRecord(record.getDate(), recordSourceTextArea.getText());
 				stopEventBus(eventBus);
 			}
 		}
@@ -271,4 +281,29 @@ public class MainViewImpl extends Composite implements MainView, JoinDaysDialog.
 
 	}
 
+	class JoinDaysTask extends LoadTask {
+
+		private Date fromDate;
+		private Date toDate;
+
+		public JoinDaysTask(Date fromDate, Date toDate, Date currentDate) {
+			super(currentDate);
+			this.fromDate = fromDate;
+			this.toDate = toDate;
+		}
+
+		@Override
+		public void run(MainViewEventBus eventBus) {
+			saveLabel.setText("Объединение...");
+			presenter.joinRecords(fromDate, toDate, super.getDate());
+			stopEventBus(eventBus);
+		}
+
+		@Override
+		public void processFault(Throwable caught) {
+			super.processFault(caught);
+			saveLabel.setText("Ошибка при объединение дней");
+		}
+
+	}
 }

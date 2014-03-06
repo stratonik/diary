@@ -5,7 +5,6 @@ import java.util.Date;
 import ru.abelitsky.diary.client.ClientFactory;
 import ru.abelitsky.diary.client.views.MainView;
 import ru.abelitsky.diary.shared.model.DiaryRecordDTO;
-import ru.abelitsky.diary.shared.model.SaveActionDTO;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -18,14 +17,8 @@ public class MainActivity implements MainView.Presenter {
 	}
 
 	@Override
-	public void joinDays(Date beginDate, Date endDate, String recordSource) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void loadRecord(Date date) {
-		clientFactory.getMainService().getRecord(date, new AsyncCallback<DiaryRecordDTO>() {
+	public void joinRecords(Date fromDate, Date toDate, Date currentDate) {
+		clientFactory.getMainService().join(fromDate, toDate, currentDate, new AsyncCallback<DiaryRecordDTO>() {
 			@Override
 			public void onSuccess(DiaryRecordDTO result) {
 				clientFactory.getMainView().setData(result);
@@ -39,12 +32,23 @@ public class MainActivity implements MainView.Presenter {
 	}
 
 	@Override
-	public void save(Date date, String recordSource) {
-		SaveActionDTO saveAction = new SaveActionDTO();
-		saveAction.setDate(date);
-		saveAction.setData(recordSource);
+	public void loadRecord(Date date) {
+		clientFactory.getMainService().get(date, new AsyncCallback<DiaryRecordDTO>() {
+			@Override
+			public void onSuccess(DiaryRecordDTO result) {
+				clientFactory.getMainView().setData(result);
+			}
 
-		clientFactory.getMainService().save(saveAction, new AsyncCallback<DiaryRecordDTO>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				clientFactory.getMainView().onError(caught);
+			}
+		});
+	}
+
+	@Override
+	public void updateRecord(Date date, String recordSource) {
+		clientFactory.getMainService().save(date, recordSource, new AsyncCallback<DiaryRecordDTO>() {
 			@Override
 			public void onSuccess(DiaryRecordDTO result) {
 				clientFactory.getMainView().setData(result);

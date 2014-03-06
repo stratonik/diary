@@ -3,14 +3,15 @@ package ru.abelitsky.diary.client.services;
 import java.util.Date;
 
 import ru.abelitsky.diary.shared.model.DiaryRecordDTO;
-import ru.abelitsky.diary.shared.model.SaveActionDTO;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface MainServiceAsync {
 
-	void getRecord(Date date, AsyncCallback<DiaryRecordDTO> callback);
+	void get(Date date, AsyncCallback<DiaryRecordDTO> callback);
 
-	void save(SaveActionDTO action, AsyncCallback<DiaryRecordDTO> callback);
+	void join(Date fromDate, Date toDate, Date currentDate, AsyncCallback<DiaryRecordDTO> callback);
+
+	void save(Date date, String record, AsyncCallback<DiaryRecordDTO> callback);
 
 }
